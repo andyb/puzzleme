@@ -1,4 +1,4 @@
-package main
+package imageslice
 
 import "image"
 import "image/jpeg"
@@ -12,11 +12,6 @@ type ImageSlice struct {
 	sliceNumber int
 	totalSlices int
 	fileName    string
-}
-
-func main() {
-	img := LoadImage("testdata/img-1.jpg")
-	SplitImagesAndSave(img)
 }
 
 /*load the image to be sliced*/
@@ -59,8 +54,14 @@ func chopImage(slice ImageSlice, completed chan int) {
 
 	sliceImg := image.NewRGBA(image.Rect(0, 0, size.X/2, size.Y/2))
 	draw.Draw(sliceImg, sliceImg.Bounds(), slice.img, image.ZP, draw.Src)
-	toSave, _ := os.Create("out/" + slice.fileName + strconv.Itoa(slice.sliceNumber) + ".jpg")
-	jpeg.Encode(toSave, sliceImg, nil)
+	toSave, err := os.Create("out/" + slice.fileName + strconv.Itoa(slice.sliceNumber) + ".jpg")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer toSave.Close()
+
+	jpeg.Encode(toSave, sliceImg, &jpeg.Options{jpeg.DefaultQuality})
 	log.Printf("Chop Chop %v", slice.sliceNumber)
 	completed <- slice.sliceNumber
 }
