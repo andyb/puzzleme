@@ -2,6 +2,7 @@ package main
 
 import "image"
 import "image/jpeg"
+import "image/draw"
 import "os"
 import "log"
 import "time"
@@ -24,21 +25,30 @@ func LoadImage() {
 		log.Fatal(err)
 	}
 
-	chopChan := make(chan int, 3)
-
-	for i := 1; i <= 4; i++ {
+	chans := map[int]chan int{}
+	totalSlices := 4
+	for i := 1; i <= totalSlices; i++ {
 		//need to work out how to block whie these complete? Buffered channel??
-		go ChopImage(img, i, chopChan)
+		chans[i] = make(chan int)
+		go ChopImage(img, i, totalSlices, chans[i])
 	}
 
-	<-chopChan
+	//loop through the channels and block until channel for each returns
+	for i := 1; i <= totalSlices; i++ {
+		<-chans[i]
+	}
+
 	WriteImageToFile()
 }
 
-func ChopImage(img image.Image, sliceNumber int, completed chan int) {
-	//img.Bounds(image.Rectangle)
-	time.Sleep(3 * time.Second)
-	log.Println("Chop chop ")
+func ChopImage(img image.Image, sliceNumber int, totalSlices int, completed chan int) {
+	//need to divide the image up by the number of slices. 
+
+	sliceImg := image.NewRGBA(image.Rect(0, 0, 400, 400))
+	draw.Draw(sliceImg, sliceImg.Bounds(), img, image.ZP, draw.Src)
+	toSave, _ := os.Create("out/temp.jpg")
+	jpeg.Encode(toSave, sliceImg, nil)
+	log.Printf("Chop Chop %v", sliceNumber)
 	completed <- sliceNumber
 }
 
