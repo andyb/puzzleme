@@ -6,6 +6,7 @@ import "image/draw"
 import "os"
 import "log"
 import "strconv"
+import "sync"
 
 type ImageSlice struct {
 	img         image.Image
@@ -33,21 +34,19 @@ func LoadImage(fileName string) image.Image {
 
 /* Split the image into the required number of slices and save out */
 func SplitImagesAndSave(img image.Image) {
-	chans := map[int]chan int{}
+	var wg sync.WaitGroup
 	totalSlices := 4
 	for i := 1; i <= totalSlices; i++ {
-		chans[i] = make(chan int)
-		go chopImage(ImageSlice{img, i, totalSlices, "temp"}, chans[i])
+		wg.Add(1)
+		go chopImage(ImageSlice{img, i, totalSlices, "temp"}, &wg)
 	}
 
-	//loop through the channels and block until channel for each returns
-	for i := 1; i <= totalSlices; i++ {
-		<-chans[i]
-	}
+	wg.Wait()
+	log.Println("Work completed")
 }
 
 /* Responsible for taking the image and the current slice and create a slice image. Will notify when complete via the channel */
-func chopImage(slice ImageSlice, completed chan int) {
+func chopImage(slice ImageSlice, wg *sync.WaitGroup) {
 	//need to divide the image up by the number of slices. 
 	rect := slice.img.Bounds()
 	size := rect.Size()
@@ -63,5 +62,5 @@ func chopImage(slice ImageSlice, completed chan int) {
 
 	jpeg.Encode(toSave, sliceImg, &jpeg.Options{jpeg.DefaultQuality})
 	log.Printf("Chop Chop %v", slice.sliceNumber)
-	completed <- slice.sliceNumber
+	wg.Done()
 }
