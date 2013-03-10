@@ -15,6 +15,18 @@ type ImageSlice struct {
 	fileName    string
 }
 
+type ImageSliceXY struct {
+	x int
+	y int
+}
+
+func (is ImageSlice) GetXandY() ImageSliceXY {
+	//need to divide the image up by the number of slices. 
+	rect := is.img.Bounds()
+	size := rect.Size()
+	return ImageSliceXY{size.X / 2, size.Y / 2}
+}
+
 /*load the image to be sliced*/
 func LoadImage(fileName string) image.Image {
 	// Open the file.
@@ -47,11 +59,8 @@ func SplitImagesAndSave(img image.Image) {
 
 /* Responsible for taking the image and the current slice and create a slice image. Will notify when complete via the channel */
 func chopImage(slice ImageSlice, wg *sync.WaitGroup) {
-	//need to divide the image up by the number of slices. 
-	rect := slice.img.Bounds()
-	size := rect.Size()
-
-	sliceImg := image.NewRGBA(image.Rect(0, 0, size.X/2, size.Y/2))
+	size := slice.GetXandY()
+	sliceImg := image.NewRGBA(image.Rect(0, 0, size.x, size.y))
 	draw.Draw(sliceImg, sliceImg.Bounds(), slice.img, image.ZP, draw.Src)
 	toSave, err := os.Create("out/" + slice.fileName + strconv.Itoa(slice.sliceNumber) + ".jpg")
 	if err != nil {
