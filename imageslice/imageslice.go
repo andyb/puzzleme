@@ -25,7 +25,7 @@ type ImageSliceSize struct {
 func GetSize(img image.Image, rows int, cols int) ImageSliceSize {
 	rect := img.Bounds()
 	size := rect.Size()
-	return ImageSliceSize{(size.X / 2), (size.Y / 2)}
+	return ImageSliceSize{(size.X / cols), (size.Y / rows)}
 }
 
 /*load the image to be sliced*/
@@ -48,15 +48,15 @@ func LoadImage(fileName string) image.Image {
 /* Split the image into the required number of slices and save out */
 func SplitImagesAndSave(img image.Image) {
 	var wg sync.WaitGroup
-	rows := 2
-	cols := 2
+	rows := 3
+	cols := 3
 	size := GetSize(img, rows, cols)
 	totalSlices := rows * cols
 	curCol := 0
 	curRow := 0
 	for i := 1; i <= totalSlices; i++ {
 		wg.Add(1)
-		chopImage(ImageSlice{img, i, totalSlices, "temp", curRow, curCol}, size, &wg)
+		go chopImage(ImageSlice{img, i, totalSlices, "temp", curRow, curCol}, size, &wg)
 		curCol++
 		if curCol%cols == 0 {
 			curCol = 0
