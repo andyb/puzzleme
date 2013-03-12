@@ -68,13 +68,10 @@ func SplitImagesAndSave(img image.Image) {
 	log.Println("Work completed")
 }
 
-/* Responsible for taking the image and the current slice and create a slice image. Will notify when complete via the channel */
+/* Responsible for taking the image and the current slice and create a slice image. Will notify when complete via the wait group */
 func chopImage(slice ImageSlice, size ImageSliceSize, wg *sync.WaitGroup) {
 	xStart := size.width * slice.col
 	yStart := size.height * slice.row
-	//log.Print("yStart:" + strconv.Itoa(yStart))
-	log.Print("xstart:" + strconv.Itoa(xStart))
-	log.Print("x:" + strconv.Itoa(xStart+size.width))
 	sliceImg := image.NewRGBA(image.Rect(0, 0, size.width, size.height))
 	draw.Draw(sliceImg, sliceImg.Bounds(), slice.img, image.Pt(xStart, yStart), draw.Src)
 	toSave, err := os.Create("out/" + slice.fileName + strconv.Itoa(slice.sliceNumber) + ".jpg")
