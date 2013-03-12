@@ -13,18 +13,19 @@ type ImageSlice struct {
 	sliceNumber int
 	totalSlices int
 	fileName    string
+	row         int
+	col         int
 }
 
-type ImageSliceXY struct {
-	x int
-	y int
+type ImageSliceSize struct {
+	width  int
+	height int
 }
 
-func (is ImageSlice) GetXandY() ImageSliceXY {
-	//need to divide the image up by the number of slices. 
-	rect := is.img.Bounds()
+func GetSize(img image.Image, rows int, cols int) ImageSliceSize {
+	rect := img.Bounds()
 	size := rect.Size()
-	return ImageSliceXY{size.X / 2, size.Y / 2}
+	return ImageSliceSize{(size.X / 2), (size.Y / 2)}
 }
 
 /*load the image to be sliced*/
@@ -47,10 +48,20 @@ func LoadImage(fileName string) image.Image {
 /* Split the image into the required number of slices and save out */
 func SplitImagesAndSave(img image.Image) {
 	var wg sync.WaitGroup
-	totalSlices := 4
+	rows := 2
+	cols := 2
+	size := GetSize(img, rows, cols)
+	totalSlices := rows * cols
+	curCol := 0
+	curRow := 0
 	for i := 1; i <= totalSlices; i++ {
 		wg.Add(1)
-		go chopImage(ImageSlice{img, i, totalSlices, "temp"}, &wg)
+		chopImage(ImageSlice{img, i, totalSlices, "temp", curRow, curCol}, size, &wg)
+		curCol++
+		if curCol%cols == 0 {
+			curCol = 0
+			curRow++
+		}
 	}
 
 	wg.Wait()
@@ -58,10 +69,14 @@ func SplitImagesAndSave(img image.Image) {
 }
 
 /* Responsible for taking the image and the current slice and create a slice image. Will notify when complete via the channel */
-func chopImage(slice ImageSlice, wg *sync.WaitGroup) {
-	size := slice.GetXandY()
-	sliceImg := image.NewRGBA(image.Rect(0, 0, size.x, size.y))
-	draw.Draw(sliceImg, sliceImg.Bounds(), slice.img, image.ZP, draw.Src)
+func chopImage(slice ImageSlice, size ImageSliceSize, wg *sync.WaitGroup) {
+	xStart := size.width * slice.col
+	yStart := size.height * slice.row
+	//log.Print("yStart:" + strconv.Itoa(yStart))
+	log.Print("xstart:" + strconv.Itoa(xStart))
+	log.Print("x:" + strconv.Itoa(xStart+size.width))
+	sliceImg := image.NewRGBA(image.Rect(0, 0, size.width, size.height))
+	draw.Draw(sliceImg, sliceImg.Bounds(), slice.img, image.Pt(xStart, yStart), draw.Src)
 	toSave, err := os.Create("out/" + slice.fileName + strconv.Itoa(slice.sliceNumber) + ".jpg")
 	if err != nil {
 		log.Fatal(err)
