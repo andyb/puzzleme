@@ -46,10 +46,8 @@ func LoadImage(fileName string) image.Image {
 }
 
 /* Split the image into the required number of slices and save out */
-func SplitImagesAndSave(img image.Image) {
+func SplitImagesAndSave(img image.Image, rows int, cols int) {
 	var wg sync.WaitGroup
-	rows := 3
-	cols := 3
 	size := GetSize(img, rows, cols)
 	totalSlices := rows * cols
 	curCol := 0

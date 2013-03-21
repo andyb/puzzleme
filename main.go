@@ -1,17 +1,23 @@
 package main
 
 import (
-	//"./imageslice"
+	"./imageslice"
 	"github.com/andyb/web"
 	"log"
 )
 
-func index(ctx *web.Context, val string) {
-	ctx.Redirect(301, "/index.html")
-}
-
-func slice(ctx *web.Context, val string) {
-	ctx.WriteString("ok")
+func slice(ctx *web.Context) {
+	rows := ctx.Params["r"]
+	cols := ctx.Params["c"]
+	log.Println(rows)
+	log.Println(cols)
+	if rows != "" && cols != "" {
+		img := imageslice.LoadImage("testdata/gorilla.jpg")
+		imageslice.SplitImagesAndSave(img, 3, 3)
+		log.Println("image slicing complete")
+	} else {
+		ctx.Abort(400, "Invalid parameters. Please privde r and c")
+	}
 }
 
 func image(ctx *web.Context, val string) {
@@ -21,7 +27,6 @@ func image(ctx *web.Context, val string) {
 
 func main() {
 	web.Get("/images/(.*)", image)
-	//web.Get("/", index)
-	web.Post("/slice/(.*)", slice)
+	web.Post("/slice", slice)
 	web.Run("0.0.0.0:8080")
 }
