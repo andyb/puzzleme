@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<html ng-app xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <meta charset="utf-8">
     <title>Puzzle me</title>
@@ -29,11 +29,12 @@
     <script src="script/jquery.ui.draggable.js"></script>
     <script src="script/jquery.ui.droppable.js"></script>
     <script src="script/jquery.ui.sortable.js"></script>
-    <Script src="script/jquery.ui.touch-punch.min.js"></script>
+    <script src="script/jquery.ui.touch-punch.min.js"></script>
+    <script src="script/angular.min.js"></script>
     <script src="script/app.js"></script>
 
   </head>
-  <body>
+  <body ng-controller="main">
       <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="navbar-inner">
             <div class="container">
@@ -45,31 +46,23 @@
                 <a class="brand" href="#">Puzzle me</a>
                 <div class="nav-collapse collapse">
                     <ul class="nav">
-                    
+                      <a href="" ng-click="peek()">Peek</a>   
+                      <a href="" ng-click="puzzle()">Puzzle</a>     
                     </ul>
                 </div><!--/.nav-collapse -->
             </div>
         </div>
     </div>
-    
-    <div class="container" id="puzzle">   
-        
+    <div class="container">   
+
         <div>
-            <ul id="puzzle" background>
-              <li class="drag ui-state-default"><img src="images/temp9" id="slice4" class="ui-widget-content" /></li>
-              <li class="drag ui-state-default"><img src="images/temp1" id="slice1" class="ui-widget-content" /></li>
-              <li class="drag ui-state-default"><img src="images/temp3" id="slice1" class="ui-widget-content" /></li>
-              <li class="drag ui-state-default"><img src="images/temp4" id="slice1" class="ui-widget-content" /></li>
-              <li class="drag ui-state-default"><img src="images/temp8" id="slice1" class="ui-widget-content" /></li>
-              <li class="drag ui-state-default" ><img src="images/temp7" id="slice1" class="ui-widget-content" /></li>
-              <li class="drag ui-state-default"><img src="images/temp2" id="slice1" class="ui-widget-content" /></li>
-              <li class="drag ui-state-default"><img src="images/temp6" id="slice1" class="ui-widget-content" /></li>
-              <li class="drag ui-state-default" ><img src="images/temp5" id="slice1" class="ui-widget-content" /></li>
+            <ul id="puzzle">
+               <li class="drag ui-state-default" ng-repeat="slice in puzzleSlices"><img src="images/{{slice.img}}" class="ui-widget-content" /></li>
             </ul>
+            <div id="peek" style="display:none">Image</div>
             </div>
         <div>
-           
-        </div>     
+    </div>     
         
     </div>
   </body>
